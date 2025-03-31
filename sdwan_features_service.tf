@@ -157,3 +157,287 @@ resource "sdwan_service_object_tracker_feature" "service_object_tracker_feature"
   vpn                        = try(each.value.tracker.vpn_id, null)
   vpn_variable               = try("{{${each.value.tracker.vpn_id_variable}}}", null)
 }
+
+resource "sdwan_service_lan_vpn_feature" "service_lan_vpn_feature" {
+  for_each = {
+    for lan_vpn_item in flatten([
+      for profile in try(local.feature_profiles.service_profiles, []) : [
+        for lan_vpn in try(profile.lan_vpns, []) : {
+          profile     = profile
+          lan_vpn     = lan_vpn
+        }
+      ]
+    ])
+    : "${lan_vpn_item.profile.name}-${lan_vpn_item.lan_vpn.name}" => lan_vpn_item
+  }
+  name                       = each.value.lan_vpn.name
+  description                = try(each.value.lan_vpn.description, null)
+  feature_profile_id         = sdwan_service_feature_profile.service_feature_profile[each.value.profile.name].id
+  vpn                        = try(each.value.lan_vpn.vpn, null)
+  config_description         = try(each.value.lan_vpn.config_description, null)
+  omp_admin_distance_ipv4    = try(each.value.lan_vpn.omp_admin_distance_ipv4, null)
+  omp_admin_distance_ipv6    = try(each.value.lan_vpn.omp_admin_distance_ipv6, null)
+  # enable_sdwan_remote_access = false
+  primary_dns_address_ipv4   = try(each.value.lan_vpn.primary_dns_address_ipv4, null)
+  secondary_dns_address_ipv4 = try(each.value.lan_vpn.secondary_dns_address_ipv4, null)
+  primary_dns_address_ipv6   = try(each.value.lan_vpn.primary_dns_address_ipv6, null)
+  secondary_dns_address_ipv6 = try(each.value.lan_vpn.secondary_dns_address_ipv6, null)
+  # host_mappings = [
+  #   {
+  #     host_name   = "HOSTMAPPING1"
+  #     list_of_ips = ["1.2.3.4"]
+  #   }
+  # ]
+  ipv4_static_routes = try(length(each.value.lan_vpn.ipv4_static_routes) == 0, true) ? null : [for route in each.value.lan_vpn.ipv4_static_routes : {
+    administrative_distance          = try(route.administrative_distance, null)
+    administrative_distance_variable = try("{{${route.administrative_distance_variable}}}", null)
+    gateway                          = try(route.gateway, local.defaults.sdwan.feature_profiles.transport_profiles.wan_vpn.ipv4_static_routes.gateway)
+    next_hops = try(length(route.next_hops) == 0, true) ? null : [for nh in route.next_hops : {
+      address                          = try(nh.address, null)
+      address_variable                 = try("{{${nh.address_variable}}}", null)
+      administrative_distance          = try(nh.administrative_distance, null)
+      administrative_distance_variable = try("{{${nh.administrative_distance_variable}}}", null)
+    }]
+    network_address          = try(route.network_address, null)
+    network_address_variable = try("{{${route.network_address_variable}}}", null)
+    subnet_mask              = try(route.subnet_mask, null)
+    subnet_mask_variable     = try("{{${route.subnet_mask_variable}}}", null)
+  }]
+  # ipv6_static_routes = [
+  #   {
+  #     prefix = "2001:0:0:1::0/12"
+  #     next_hops = [
+  #       {
+  #         address                 = "2001:0:0:1::0"
+  #         administrative_distance = 1
+  #       }
+  #     ]
+  #   }
+  # ]
+  # services = [
+  #   {
+  #     service_type   = "FW"
+  #     ipv4_addresses = ["1.2.3.4"]
+  #     tracking       = true
+  #   }
+  # ]
+  # service_routes = [
+  #   {
+  #     network_address = "1.2.3.4"
+  #     subnet_mask     = "0.0.0.0"
+  #     service         = "SIG"
+  #     vpn             = 0
+  #   }
+  # ]
+  # gre_routes = [
+  #   {
+  #     network_address = "1.2.3.4"
+  #     subnet_mask     = "0.0.0.0"
+  #     interface       = ["gre01"]
+  #     vpn             = 0
+  #   }
+  # ]
+  # ipsec_routes = [
+  #   {
+  #     network_address = "1.2.3.4"
+  #     subnet_mask     = "0.0.0.0"
+  #     interface       = ["ipsec01"]
+  #   }
+  # ]
+  # nat_pools = [
+  #   {
+  #     nat_pool_name = 1
+  #     prefix_length = 3
+  #     range_start   = "1.2.3.4"
+  #     range_end     = "2.3.4.5"
+  #     overload      = true
+  #     direction     = "inside"
+  #   }
+  # ]
+  # nat_port_forwards = [
+  #   {
+  #     nat_pool_name        = 2
+  #     source_port          = 122
+  #     translate_port       = 330
+  #     source_ip            = "1.2.3.4"
+  #     translated_source_ip = "2.3.4.5"
+  #     protocol             = "TCP"
+  #   }
+  # ]
+  # static_nats = [
+  #   {
+  #     nat_pool_name        = 3
+  #     source_ip            = "1.2.3.4"
+  #     translated_source_ip = "2.3.4.5"
+  #     static_nat_direction = "inside"
+  #   }
+  # ]
+  # nat_64_v4_pools = [
+  #   {
+  #     name        = "NATPOOL1"
+  #     range_start = "1.2.3.4"
+  #     range_end   = "2.3.4.5"
+  #     overload    = false
+  #   }
+  # ]
+  # ipv4_import_route_targets = [
+  #   {
+  #     route_target = "1.1.1.3:200"
+  #   }
+  # ]
+  # ipv4_export_route_targets = [
+  #   {
+  #     route_target = "1.1.1.3:200"
+  #   }
+  # ]
+  # ipv6_import_route_targets = [
+  #   {
+  #     route_target = "1.1.1.3:200"
+  #   }
+  # ]
+  # ipv6_export_route_targets = [
+  #   {
+  #     route_target = "1.1.1.3:200"
+  #   }
+  # ]
+}
+
+resource "sdwan_service_lan_vpn_interface_ethernet_feature" "service_lan_vpn_interface_ethernet_feature" {
+  for_each = {
+    for interface_item in flatten([
+      for profile in try(local.feature_profiles.service_profiles, {}) : [
+        for lan_vpn in try(profile.lan_vpns, {}) : [
+          for interface in try(lan_vpn.ethernet_interfaces, []) : {
+            profile   = profile
+            lan_vpn   = lan_vpn
+            interface = interface
+          }
+        ]
+      ]
+    ])
+    : "${interface_item.profile.name}-lan_vpn-${interface_item.interface.name}" => interface_item
+  }
+  name                         = each.value.interface.name
+  description                  = try(each.value.interface.description, null)
+  feature_profile_id           = sdwan_service_feature_profile.service_feature_profile[each.value.profile.name].id
+  service_lan_vpn_feature_id   = sdwan_service_lan_vpn_feature.service_lan_vpn_feature["${each.value.profile.name}-${each.value.lan_vpn.name}"].id
+  shutdown                     = try(each.value.interface.shutdown, null)
+  interface_name               = try(each.value.interface.interface_name, null)
+  interface_description        = try(each.value.interface.interface_description, null)
+  ipv4_address                 = try(each.value.interface.ipv4_address, null)
+  ipv4_subnet_mask             = try(each.value.interface.ipv4_subnet_mask, null)
+  # ipv4_secondary_addresses = [
+  #   {
+  #     address     = "1.2.3.5"
+  #     subnet_mask = "0.0.0.0"
+  #   }
+  # ]
+  # ipv4_dhcp_helper = ["1.2.3.4"]
+  # ipv6_dhcp_helpers = [
+  #   {
+  #     address           = "2001:0:0:1::0"
+  #     dhcpv6_helper_vpn = 1
+  #   }
+  # ]
+  # ipv4_nat               = false
+  ipv4_nat_type          = try(each.value.interface.ipv4_nat_type, "pool")
+  # ipv4_nat_range_start   = "1.2.3.4"
+  # ipv4_nat_range_end     = "4.5.6.7"
+  # ipv4_nat_prefix_length = 1
+  # ipv4_nat_overload      = true
+  # ipv4_nat_loopback      = "123"
+  # ipv4_nat_udp_timeout   = 123
+  # ipv4_nat_tcp_timeout   = 123
+  # static_nats = [
+  #   {
+  #     source_ip    = "1.2.3.4"
+  #     translate_ip = "2.3.4.5"
+  #     direction    = "inside"
+  #     source_vpn   = 0
+  #   }
+  # ]
+  # ipv6_nat         = true
+  # nat64            = false
+  # acl_shaping_rate = 12
+  # ipv6_vrrps = [
+  #   {
+  #     group_id  = 1
+  #     priority  = 100
+  #     timer     = 1000
+  #     track_omp = false
+  #     ipv6_addresses = [
+  #       {
+  #         link_local_address = "1::1"
+  #         global_address     = "1::1/24"
+  #       }
+  #     ]
+  #   }
+  # ]
+  ipv4_vrrps = try(length(each.value.interface.ipv4_vrrp_groups) == 0, true) ? null : [for group in each.value.interface.ipv4_vrrp_groups : {
+    group_id              = try(group.id, null)
+    priority              = try(group.priority, null)
+    timer                 = try(group.timer, null)
+    track_omp             = try(group.track_omp, null)
+    address               = try(group.address, null)
+    secondary_addresses   = try(length(group.secondary_addresses) == 0, true) ? null : [for adr in group.secondary_addresses : {
+      address             = try(adr.address, null)
+      subnet_mask         = try(adr.subnet_mask, null)
+    }]
+    tloc_prefix_change       = try(group.tloc_prefix_change, null)
+    tloc_pref_change_value   = try(group.tloc_pref_change_value, null)
+    tracking_objects = try(length(group.tracking_objects) == 0, true) ? null : [for obj in group.tracking_objects : {
+      tracker_id               = try(obj.id, null)
+      tracker_action           = try(obj.action, null)
+      decrement_value          = try(obj.decrement_value, null)
+    }]
+  }]
+  # ipv4_vrrps = [
+  #   {
+  #     group_id  = 1
+  #     priority  = 100
+  #     timer     = 1000
+  #     track_omp = false
+  #     address   = "1.2.3.4"
+  #     secondary_addresses = [
+  #       {
+  #         address     = "2.3.4.5"
+  #         subnet_mask = "0.0.0.0"
+  #       }
+  #     ]
+  #     tloc_prefix_change     = true
+  #     tloc_pref_change_value = 100
+  #     tracking_objects = [
+  #       {
+  #         tracker_id      = "1b270f6d-479b-47e3-ab0b-51bc6811a303"
+  #         tracker_action  = "Decrement"
+  #         decrement_value = 100
+  #       }
+  #     ]
+  #   }
+  # ]
+  # arps = [
+  #   {
+  #     ip_address  = "1.2.3.4"
+  #     mac_address = "00-B0-D0-63-C2-26"
+  #   }
+  # ]
+  # trustsec_enable_sgt_propogation      = false
+  # trustsec_propogate                   = true
+  # trustsec_security_group_tag          = 123
+  # trustsec_enable_enforced_propogation = false
+  # trustsec_enforced_security_group_tag = 1234
+  # duplex                               = "full"
+  # mac_address                          = "00-B0-D0-63-C2-26"
+  ip_mtu                 = try(each.value.interface.ip_mtu, null)
+  interface_mtu          = try(each.value.interface.interface_mtu, null)
+  tcp_mss                = try(each.value.interface.tcp_mss, null)
+  # speed                                = "1000"
+  # arp_timeout                          = 1200
+  # autonegotiate                        = false
+  # media_type                           = "auto-select"
+  load_interval          = try(each.value.interface.load_interval, null)
+  # tracker                              = "TRACKER1"
+  # icmp_redirect_disable                = true
+  # xconnect                             = "1"
+  # ip_directed_broadcast                = false
+}
