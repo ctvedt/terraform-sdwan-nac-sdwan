@@ -192,11 +192,19 @@ resource "sdwan_service_lan_vpn_feature" "service_lan_vpn_feature" {
     administrative_distance          = try(route.administrative_distance, null)
     administrative_distance_variable = try("{{${route.administrative_distance_variable}}}", null)
     gateway                          = try(route.gateway, local.defaults.sdwan.feature_profiles.transport_profiles.wan_vpn.ipv4_static_routes.gateway)
+    null0                            = try(route.null0, null)
     next_hops = try(length(route.next_hops) == 0, true) ? null : [for nh in route.next_hops : {
       address                          = try(nh.address, null)
       address_variable                 = try("{{${nh.address_variable}}}", null)
       administrative_distance          = try(nh.administrative_distance, null)
       administrative_distance_variable = try("{{${nh.administrative_distance_variable}}}", null)
+    }]
+    next_hop_with_trackers = try(length(route.next_hop_with_trackers) == 0, true) ? null : [for nht in route.next_hop_with_trackers : {
+      address                          = try(nht.address, null)
+      address_variable                 = try("{{${nht.address_variable}}}", null)
+      administrative_distance          = try(nht.administrative_distance, null)
+      administrative_distance_variable = try("{{${nht.administrative_distance_variable}}}", null)
+      tracker_id                       = try(sdwan_service_tracker_feature.service_tracker_feature["${each.value.profile.name}-${nht.tracker}"].id, null)
     }]
     network_address          = try(route.network_address, null)
     network_address_variable = try("{{${route.network_address_variable}}}", null)
