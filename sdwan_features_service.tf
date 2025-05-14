@@ -325,15 +325,23 @@ resource "sdwan_service_lan_vpn_interface_ethernet_feature" "service_lan_vpn_int
     ])
     : "${interface_item.profile.name}-lan_vpn-${interface_item.interface.name}" => interface_item
   }
-  name                         = each.value.interface.name
-  description                  = try(each.value.interface.description, null)
-  feature_profile_id           = sdwan_service_feature_profile.service_feature_profile[each.value.profile.name].id
-  service_lan_vpn_feature_id   = sdwan_service_lan_vpn_feature.service_lan_vpn_feature["${each.value.profile.name}-${each.value.lan_vpn.name}"].id
-  shutdown                     = try(each.value.interface.shutdown, null)
-  interface_name               = try(each.value.interface.interface_name, null)
-  interface_description        = try(each.value.interface.interface_description, null)
-  ipv4_address                 = try(each.value.interface.ipv4_address, null)
-  ipv4_subnet_mask             = try(each.value.interface.ipv4_subnet_mask, null)
+  name                            = each.value.interface.name
+  description                     = try(each.value.interface.description, null)
+  feature_profile_id              = sdwan_service_feature_profile.service_feature_profile[each.value.profile.name].id
+  service_lan_vpn_feature_id      = sdwan_service_lan_vpn_feature.service_lan_vpn_feature["${each.value.profile.name}-${each.value.lan_vpn.name}"].id
+  shutdown                        = try(each.value.interface.shutdown, null)
+  shutdown_variable               = try("{{${each.value.interface.shutdown_variable}}}", null)
+  interface_name                  = try(each.value.interface.interface_name, null)
+  interface_name_variable         = try("{{${each.value.interface.interface_name_variable}}}", null)
+  interface_description           = try(each.value.interface.interface_description, null)
+  interface_description_variable  = try("{{${each.value.interface.interface_description_variable}}}", null)
+  ipv4_address                    = try(each.value.interface.ipv4_address, null)
+  ipv4_address_variable           = try("{{${each.value.interface.ipv4_address_variable}}}", null)
+  ipv4_subnet_mask                = try(each.value.interface.ipv4_subnet_mask, null)
+  ipv4_subnet_mask_variable       = try("{{${each.value.interface.ipv4_subnet_mask_variable}}}", null)
+  ipv4_dhcp_helper = try(length(each.value.interface.ipv4_dhcp_helper) == 0, true) ? null : [for helper in each.value.interface.ipv4_dhcp_helper : (
+    helper.ip
+  )]
   # ipv4_secondary_addresses = [
   #   {
   #     address     = "1.2.3.5"
@@ -383,46 +391,32 @@ resource "sdwan_service_lan_vpn_interface_ethernet_feature" "service_lan_vpn_int
   # ]
   ipv4_vrrps = try(length(each.value.interface.ipv4_vrrp_groups) == 0, true) ? null : [for group in each.value.interface.ipv4_vrrp_groups : {
     group_id              = try(group.id, null)
+    group_id_variable     = try("{{${group.group_id_variable}}}", null)
     priority              = try(group.priority, null)
+    priority_variable     = try("{{${group.priority_variable}}}", null)
     timer                 = try(group.timer, null)
+    timer_variable        = try("{{${group.timer_variable}}}", null)
     track_omp             = try(group.track_omp, null)
     address               = try(group.address, null)
+    address_variable      = try("{{${group.address_variable}}}", null)
     secondary_addresses   = try(length(group.secondary_addresses) == 0, true) ? null : [for adr in group.secondary_addresses : {
-      address             = try(adr.address, null)
-      subnet_mask         = try(adr.subnet_mask, null)
+      address               = try(adr.address, null)
+      address_variable      = try("{{${adr.address_variable}}}", null)
+      subnet_mask           = try(adr.subnet_mask, null)
+      subnet_mask_variable  = try("{{${adr.subnet_mask_variable}}}", null)
     }]
     tloc_prefix_change       = try(group.tloc_prefix_change, null)
     tloc_pref_change_value   = try(group.tloc_pref_change_value, null)
     tracking_objects = try(length(group.tracking_objects) == 0, true) ? null : [for obj in group.tracking_objects : {
+      # TODO: fix tracker_id as a lookup value
+      # tracker_id               = try(sdwan_service_object_tracker_feature.service_object_tracker_feature["${each.value.profile.name}-${obj.name}"].id, null)
       tracker_id               = try(obj.id, null)
       tracker_action           = try(obj.action, null)
+      tracker_action_variable  = try("{{${obj.tracker_action_variable}}}", null)
       decrement_value          = try(obj.decrement_value, null)
+      decrement_value_variable = try("{{${obj.decrement_value_variable}}}", null)
     }]
   }]
-  # ipv4_vrrps = [
-  #   {
-  #     group_id  = 1
-  #     priority  = 100
-  #     timer     = 1000
-  #     track_omp = false
-  #     address   = "1.2.3.4"
-  #     secondary_addresses = [
-  #       {
-  #         address     = "2.3.4.5"
-  #         subnet_mask = "0.0.0.0"
-  #       }
-  #     ]
-  #     tloc_prefix_change     = true
-  #     tloc_pref_change_value = 100
-  #     tracking_objects = [
-  #       {
-  #         tracker_id      = "1b270f6d-479b-47e3-ab0b-51bc6811a303"
-  #         tracker_action  = "Decrement"
-  #         decrement_value = 100
-  #       }
-  #     ]
-  #   }
-  # ]
   # arps = [
   #   {
   #     ip_address  = "1.2.3.4"
