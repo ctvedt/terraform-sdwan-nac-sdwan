@@ -483,7 +483,7 @@ resource "sdwan_transport_wan_vpn_interface_ethernet_feature" "transport_wan_vpn
   tloc_extension_variable           = try("{{${each.value.interface.tloc_extension_variable}}}", null)
   tunnel_bandwidth_percent          = try(each.value.interface.tunnel_interface.per_tunnel_qos_bandwidth_percent, null)
   tunnel_bandwidth_percent_variable = try("{{${each.value.interface.tunnel_interface.per_tunnel_qos_bandwidth_percent_variable}}}", null)
-  tunnel_interface                  = try(each.value.interface.tunnel_interface != null, null)
+  tunnel_interface                  = try(each.value.interface.tunnel_interface != null, false)
   tunnel_interface_encapsulations = try(each.value.interface.tunnel_interface == null, true) ? null : flatten([
     try(each.value.interface.tunnel_interface.ipsec_encapsulation, local.defaults.sdwan.feature_profiles.transport_profiles.wan_vpn.ethernet_interfaces.tunnel_interface.ipsec_encapsulation) ? [{
       encapsulation       = "ipsec"
