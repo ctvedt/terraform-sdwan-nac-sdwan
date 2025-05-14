@@ -589,21 +589,23 @@ resource "sdwan_service_route_policy_feature" "route_policy_feature" {
         ospf_tag                        = try(s.match_entries.ospf_tag, null)
       }]
     ])
-    actions = try(length(s.actions) == 0, true) ? null : [for sequence_action in s.actions : {
-      as_path_prepend      = try(sequence_action.as_path_prepend, null)
-      community            = try(sequence_action.community, null)
-      community_additive   = try(sequence_action.community_additive, null)
-      community_variable   = try("{{${sequence_action.community_variable}}}", null)
-      ipv4_next_hop        = try(sequence_action.ipv4_next_hop, null)
-      ipv6_next_hop        = try(sequence_action.ipv6_next_hop, null)
-      local_preference     = try(sequence_action.local_preference, null)
-      metric               = try(sequence_action.metric, null)
-      metric_type          = try(sequence_action.metric_type, null)
-      omp_tag              = try(sequence_action.omp_tag, null)
-      origin               = try(sequence_action.origin, null)
-      ospf_tag             = try(sequence_action.ospf_tag, null)
-      weight               = try(sequence_action.weight, null)
-    }]
+    actions = try(length(s.actions) == 0, true) ? null : flatten([
+      [{
+        as_path_prepend      = try(s.actions.as_path_prepend, null)
+        community            = try(s.actions.community, null)
+        community_additive   = try(s.actions.community_additive, null)
+        community_variable   = try("{{${s.actions.community_variable}}}", null)
+        ipv4_next_hop        = try(s.actions.ipv4_next_hop, null)
+        ipv6_next_hop        = try(s.actions.ipv6_next_hop, null)
+        local_preference     = try(s.actions.local_preference, null)
+        metric               = try(s.actions.metric, null)
+        metric_type          = try(s.actions.metric_type, null)
+        omp_tag              = try(s.actions.omp_tag, null)
+        origin               = try(s.actions.origin, null)
+        ospf_tag             = try(s.actions.ospf_tag, null)
+        weight               = try(s.actions.weight, null)
+      }]
+    ])
   }]
 }
 
