@@ -188,12 +188,19 @@ locals {
   unsupported_features = merge(
     {
       for profile in try(local.feature_profiles.transport_profiles, []) : profile.name => merge(
-      {
-        for feature in try(profile.wan_vpn.ethernet_interfaces, []) : feature.name => {
-          parcel_id   = sdwan_transport_wan_vpn_interface_ethernet_feature.transport_wan_vpn_interface_ethernet_feature["${profile.name}-wan_vpn-${feature.name}"].id
-          parcel_type = "wan/vpn/interface/ethernet"
-        }
-      }
+        {
+          for feature in try(profile.wan_vpn.ethernet_interfaces, []) : feature.name => {
+            parcel_id   = sdwan_transport_wan_vpn_interface_ethernet_feature.transport_wan_vpn_interface_ethernet_feature["${profile.name}-wan_vpn-${feature.name}"].id
+            parcel_type = "wan/vpn/interface/ethernet"
+          }
+        },
+        # Other features to be added when supported
+        # {
+        #   for feature in try(profile.wan_vpn.gre_interfaces, []) : feature.name => {
+        #     parcel_id   = sdwan_transport_wan_vpn_interface_gre_feature.transport_wan_vpn_interface_gre_feature["${profile.name}-wan_vpn-${feature.name}"].id
+        #     parcel_type = "wan/vpn/interface/gre"
+        #   }
+        # }
       )
     },
     {
