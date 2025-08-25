@@ -272,8 +272,8 @@ resource "sdwan_service_lan_vpn_feature" "service_lan_vpn_feature" {
   ipv4_static_routes = try(length(each.value.lan_vpn.ipv4_static_routes) == 0, true) ? null : [for route in each.value.lan_vpn.ipv4_static_routes : {
     administrative_distance          = try(route.administrative_distance, null)
     administrative_distance_variable = try("{{${route.administrative_distance_variable}}}", null)
-    gateway                          = try(route.gateway, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpn.ipv4_static_routes.gateway)
-    null0                            = try(route.null0, null)
+    gateway                          = try(route.gateway, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpn.ipv4_static_routes.gateway) == "nexthop" ? "nextHop" : try(route.gateway, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpn.ipv4_static_routes.gateway)
+    null0                            = try(route.gateway, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpn.ipv4_static_routes.gateway) == "null0" ? true : null
     next_hops = try(length(route.next_hops) == 0, true) ? null : [for nh in route.next_hops : {
       address                          = try(nh.address, null)
       address_variable                 = try("{{${nh.address_variable}}}", null)
@@ -308,8 +308,8 @@ resource "sdwan_service_lan_vpn_feature" "service_lan_vpn_feature" {
       administrative_distance          = try(nh.administrative_distance, null)
       administrative_distance_variable = try("{{${nh.administrative_distance_variable}}}", null)
     }]
-    gateway         = try(route.gateway, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpn.ipv6_static_routes.gateway)
-    null0           = try(route.null0, null)
+    gateway                          = try(route.gateway, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpn.ipv6_static_routes.gateway) == "nexthop" ? "nextHop" : try(route.gateway, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpn.ipv6_static_routes.gateway)
+    null0                            = try(route.gateway, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpn.ipv6_static_routes.gateway) == "null0" ? true : null
     prefix          = try(route.prefix, null)
     prefix_variable = try("{{${route.prefix_variable}}}", null)
   }]
