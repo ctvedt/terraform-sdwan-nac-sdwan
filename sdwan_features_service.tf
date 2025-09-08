@@ -850,7 +850,7 @@ resource "sdwan_service_lan_vpn_interface_ethernet_feature" "service_lan_vpn_int
   autonegotiate_variable         = try("{{${each.value.interface.autonegotiate_variable}}}", null)
   duplex                         = try(each.value.interface.duplex, null)
   duplex_variable                = try("{{${each.value.interface.duplex_variable}}}", null)
-  enable_dhcpv6                  = try(each.value.interface.ipv6_configuration_type, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpn.ethernet_interfaces.ipv6_configuration_type) == "dynamic" ? true : null
+  enable_dhcpv6                  = try(each.value.interface.ipv6_configuration_type, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpns.ethernet_interfaces.ipv6_configuration_type) == "dynamic" ? true : null
   icmp_redirect_disable          = try(each.value.interface.icmp_redirect_disable, null)
   icmp_redirect_disable_variable = try("{{${each.value.interface.icmp_redirect_disable_variable}}}", null)
   interface_description          = try(each.value.interface.interface_description, null)
@@ -928,7 +928,7 @@ resource "sdwan_service_lan_vpn_interface_ethernet_feature" "service_lan_vpn_int
   }]
   ipv6_address          = try(each.value.interface.ipv6_address, null)
   ipv6_address_variable = try("{{${each.value.interface.ipv6_address_variable}}}", null)
-  ipv6_secondary_addresses = try(try(each.value.interface.ipv6_configuration_type, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpn.ethernet_interfaces.ipv6_configuration_type) == "static" && length(each.value.interface.ipv6_secondary_addresses) > 0, false) ? [for a in each.value.interface.ipv6_secondary_addresses : {
+  ipv6_secondary_addresses = try(try(each.value.interface.ipv6_configuration_type, local.defaults.sdwan.feature_profiles.service_profiles.lan_vpns.ethernet_interfaces.ipv6_configuration_type) == "static" && length(each.value.interface.ipv6_secondary_addresses) > 0, false) ? [for a in each.value.interface.ipv6_secondary_addresses : {
     address          = try(a.address, null)
     address_variable = try("{{${a.address_variable}}}", null)
   }] : null
