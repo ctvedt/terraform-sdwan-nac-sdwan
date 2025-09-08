@@ -259,6 +259,14 @@ locals {
           }
         },
         {
+          for feature in flatten([
+            for lan_vpn in try(profile.lan_vpns, []) : try(lan_vpn.ethernet_interfaces, [])
+          ]) : feature.name => {
+            parcel_id   = sdwan_service_lan_vpn_interface_ethernet_feature.service_lan_vpn_interface_ethernet_feature["${profile.name}-lan_vpn-${feature.name}"].id
+            parcel_type = "lan/vpn/interface/ethernet"
+          }
+        },
+        {
           for feature in try(profile.route_policies, []) : feature.name => {
             parcel_id   = sdwan_service_route_policy_feature.service_route_policy_feature["${profile.name}-${feature.name}"].id
             parcel_type = "route-policy"
